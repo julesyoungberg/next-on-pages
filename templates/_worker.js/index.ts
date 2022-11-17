@@ -128,17 +128,30 @@ declare const __MIDDLEWARE__: EdgeFunctions;
 
 export default {
   async fetch(request, env, context) {
-    const { pathname } = new URL(request.url);
     const routes = routesMatcher({ request }, __CONFIG__.routes);
 
     for (const route of routes) {
       if ("middlewarePath" in route && route.middlewarePath in __MIDDLEWARE__) {
-        return await __MIDDLEWARE__[route.middlewarePath].entrypoint.default(
+        const response = await __MIDDLEWARE__[route.middlewarePath].entrypoint.default(
           request,
           context
         );
+
+        if (response.headers.has('x-middleware-next')) {
+          break;
+        }
+        
+        if (response.headers.has('x-middleware-rewrite')) {
+          const rewriteUrl = response.headers.get('x-middleware-rewrite');
+          request = new Request(rewriteUrl, request);
+          break;
+        }
+
+        return response;
       }
     }
+
+    const { pathname } = new URL(request.url);
 
     for (const { matchers, entrypoint } of Object.values(__FUNCTIONS__)) {
       let found = false;
