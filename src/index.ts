@@ -368,10 +368,11 @@ const transform = async ({
 
   const middlewareEntries = Object.values(middlewareManifest.middleware);
   const functionsEntries = Object.values(middlewareManifest.functions);
+  const validMiddlewareNames = ["middleware", "src/middleware"];
   for (const [name, filepath] of functionsMap) {
-    if (name === "middleware" && middlewareEntries.length > 0) {
+    if (validMiddlewareNames.includes(name) && middlewareEntries.length > 0) {
       for (const entry of middlewareEntries) {
-        if ("middleware" === entry?.name) {
+        if (validMiddlewareNames.includes(entry?.name)) {
           hydratedMiddleware.set(name, { matchers: entry.matchers, filepath });
         }
       }
