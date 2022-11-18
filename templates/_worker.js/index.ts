@@ -151,7 +151,12 @@ export default {
       }
     }
 
-    const { pathname } = new URL(request.url);
+    let { pathname } = new URL(request.url);
+
+    // match data requests with their respective pages
+    if (pathname.startsWith("/_next/data/") && pathname.endsWith(".json")) {
+      pathname = "/" + pathname.split("/").slice(-1)[0].slice(0, -5);
+    }
 
     for (const { matchers, entrypoint } of Object.values(__FUNCTIONS__)) {
       let found = false;
