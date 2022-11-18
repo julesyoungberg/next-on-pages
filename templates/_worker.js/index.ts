@@ -132,17 +132,16 @@ export default {
 
     for (const route of routes) {
       if ("middlewarePath" in route && route.middlewarePath in __MIDDLEWARE__) {
-        const response = await __MIDDLEWARE__[route.middlewarePath].entrypoint.default(
-          request,
-          context
-        );
+        const response = await __MIDDLEWARE__[
+          route.middlewarePath
+        ].entrypoint.default(request, context);
 
-        if (response.headers.has('x-middleware-next')) {
+        if (response.headers.has("x-middleware-next")) {
           break;
         }
-        
-        if (response.headers.has('x-middleware-rewrite')) {
-          const rewriteUrl = response.headers.get('x-middleware-rewrite');
+
+        if (response.headers.has("x-middleware-rewrite")) {
+          const rewriteUrl = response.headers.get("x-middleware-rewrite");
           request = new Request(rewriteUrl, request);
           break;
         }
@@ -154,8 +153,12 @@ export default {
     let { pathname } = new URL(request.url);
 
     // match data requests with their respective pages
-    if (pathname.startsWith("/_next/data/") && pathname.endsWith(".json")) {
-      pathname = "/" + pathname.split("/").slice(-1)[0].slice(0, -5);
+    if (pathname.startsWith("/_next/data/")) {
+      if (pathname.endsWith("index.json")) {
+        pathname = "/";
+      } else if (pathname.endsWith(".json")) {
+        pathname = "/" + pathname.split("/").slice(-1)[0].slice(0, -5);
+      }
     }
 
     for (const { matchers, entrypoint } of Object.values(__FUNCTIONS__)) {
